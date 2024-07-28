@@ -7,3 +7,4 @@ services:
       - "1688:1688"
     restart: always
     network_mode: host
+    tty: true
