@@ -1,3 +1,4 @@
+# Build vlmcsd
 FROM alpine:latest as builder
 WORKDIR /root
 RUN apk add --no-cache git make build-base && \
@@ -5,8 +6,19 @@ RUN apk add --no-cache git make build-base && \
     cd vlmcsd/ && \
     make
 
+# Build the final image
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /root/vlmcsd/bin/vlmcsd /usr/bin/vlmcsd
-EXPOSE 1688/tcp
-CMD [ "/usr/bin/vlmcsd", "-D", "-d" ]
+
+# Install nginx
+RUN apk add --no-cache nginx
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose ports
+EXPOSE 1688/tcp 80/tcp
+
+# Start vlmcsd and nginx
+CMD ["/bin/sh", "-c", "/usr/bin/vlmcsd -D -d & nginx -g 'daemon off;'"]
